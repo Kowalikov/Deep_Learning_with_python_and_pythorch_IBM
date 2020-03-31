@@ -23,3 +23,8 @@ new_float_tensor = old_int_tensor.type(torch.FloatTensor)
 tensuar = new_float_tensor.type(torch.LongTensor)
 print("The type of the new_float_tensor:", new_float_tensor.type())
 print("The type of the new_float_tensor:", tensuar.type())
+
+a = torch.linspace(0, 10, 11)
+indexes = np.linspace(0, 4, 5) #using variables to pass the indexes
+a[indexes]*= 10
+print(a)
