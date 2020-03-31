@@ -11,8 +11,8 @@ for x in range(10):
 a=torch.tensor(b) #tworzenie tensora z listy
 print(a.dtype) #typ danych z tensora
 print(a.type()) #typ tensora, (bo tensory też mają typy)
-a.type(torch.DoubleTensor) #zmiana typu tensora, która nie wiadomo czemu nie działa
-print(a.type())
+a2 = a.type(torch.DoubleTensor) #zmiana typu tensora, działa tylko dla nowych tensorów
+print(a2.type())
 
 print(a.size()) #ilośc elementów tensora
 print(a.ndimension()) #wymiar tensora
