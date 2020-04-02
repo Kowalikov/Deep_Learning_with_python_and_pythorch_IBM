@@ -60,6 +60,7 @@ print(f)
 
 gx = torch.linspace(0, np.pi*2, 101) #previous exaple simplier assign
 gy = torch.sin(gx)
+gy= gy
 plt.plot(gx.numpy(), gy.numpy())
 plt.show()
 
