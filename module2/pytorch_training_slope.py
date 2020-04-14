@@ -39,7 +39,6 @@ class plot_diagram():
         plt.xlabel("B")
         plt.show()
 
-
     # Destructor
     def __del__(self):
         plt.close('all')
@@ -56,10 +55,10 @@ def train_model(iter):
         # plot the diagram for us to have a better idea
         gradient_plot(Yhat, w, loss.item(), epoch)
 
-        print("Loss ", epoch, "#: ", loss, sep="")
-
         # store the loss into list
         LOSS.append(loss)
+
+        print("Loss ", epoch, "#: ", loss, sep="")
 
         # backward pass: compute gradient of the loss with respect to all the learnable parameters
         loss.backward()
@@ -74,14 +73,13 @@ X = torch.arange(-3, 3, 0.1).view(-1, 1)
 f = -3 * X
 Y = f + 0.1 * torch.randn(X.size())
 
-lr = 0.15
+lr = 0.08
 LOSS = []
 w = torch.tensor(-10.0, requires_grad = True)
 gradient_plot = plot_diagram(X, Y, w, stop = 5)
 
-train_model(8)
+train_model(12)
 plt.plot(LOSS)
 plt.tight_layout()
 plt.xlabel("Epoch/Iterations")
 plt.ylabel("Cost")
-

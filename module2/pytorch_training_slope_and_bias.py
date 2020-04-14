@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 
 def forward(x):
-    return w * x
+    return w * x + b
 
 def criterion(yhat, y):
     return torch.mean((yhat - y) ** 2)
@@ -13,15 +13,16 @@ def criterion(yhat, y):
 class plot_diagram():
 
     # Constructor
-    def __init__(self, X, Y, w, stop, go=False):
-        start = w.data
+    def __init__(self, X, Y, w, b, stop, go=False):
+        startw = w.data
+        startb = b.data
         self.error = []
         self.parameter = []
         self.X = X.numpy()
         self.Y = Y.numpy()
-        self.parameter_values = torch.arange(start, stop)
+        self.parameter_values = torch.arange(startw, stop)
         self.Loss_function = [criterion(forward(X), Y) for w.data in self.parameter_values]
-        w.data = start
+        w.data = startw
 
     # Executor
     def __call__(self, Yhat, w, error, n):
@@ -39,7 +40,6 @@ class plot_diagram():
         plt.xlabel("B")
         plt.show()
 
-
     # Destructor
     def __del__(self):
         plt.close('all')
@@ -54,34 +54,37 @@ def train_model(iter):
         loss = criterion(Yhat, Y)
 
         # plot the diagram for us to have a better idea
-        gradient_plot(Yhat, w, loss.item(), epoch)
-
-        print("Loss ", epoch, "#: ", loss, sep="")
+        if epoch == iter-1:
+            gradient_plot(Yhat, w, loss.item(), epoch)
 
         # store the loss into list
         LOSS.append(loss)
+
+        print("Loss ", epoch, "#: ", loss, sep="")
+        print("W:", w.data, "\tb:", b.data)
 
         # backward pass: compute gradient of the loss with respect to all the learnable parameters
         loss.backward()
 
         # updata parameters
         w.data = w.data - lr * w.grad.data
-
-        # zero the gradients before running the backward pass
         w.grad.data.zero_()
 
-X = torch.arange(-3, 3, 0.1).view(-1, 1)
-f = -3 * X
-Y = f + 0.1 * torch.randn(X.size())
+        b.data = b.data - lr * b.grad.data
+        b.grad.data.zero_()
 
-lr = 0.15
+X = torch.arange(-3, 3, 0.1).view(-1, 1)
+f = -3 * X - 1
+Y = f + 0.2 * torch.randn(X.size())
+
+lr = 0.1
 LOSS = []
 w = torch.tensor(-10.0, requires_grad = True)
-gradient_plot = plot_diagram(X, Y, w, stop = 5)
+b = torch.tensor( 5.0, requires_grad = True)
+gradient_plot = plot_diagram(X, Y, w, b, stop = 5)
 
-train_model(8)
+train_model(12)
 plt.plot(LOSS)
 plt.tight_layout()
 plt.xlabel("Epoch/Iterations")
 plt.ylabel("Cost")
-
