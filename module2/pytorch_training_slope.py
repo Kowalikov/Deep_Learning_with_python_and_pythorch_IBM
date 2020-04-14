@@ -73,7 +73,7 @@ X = torch.arange(-3, 3, 0.1).view(-1, 1)
 f = -3 * X
 Y = f + 0.1 * torch.randn(X.size())
 
-lr = 0.08
+lr = 0.2
 LOSS = []
 w = torch.tensor(-10.0, requires_grad = True)
 gradient_plot = plot_diagram(X, Y, w, stop = 5)

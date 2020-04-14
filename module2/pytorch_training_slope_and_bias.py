@@ -88,3 +88,8 @@ plt.plot(LOSS)
 plt.tight_layout()
 plt.xlabel("Epoch/Iterations")
 plt.ylabel("Cost")
+plt.show()
+
+X = torch.arange(-3, 3, 0.1).view(-1, 1)
+f = 1 * X - 1
+Y = f + 0.1 * torch.randn(X.size())
