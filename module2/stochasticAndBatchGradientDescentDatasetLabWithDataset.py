@@ -4,9 +4,26 @@ matplotlib.use("macosx")
 
 import matplotlib.pyplot as plt
 import numpy as np
+from torch.utils.data import Dataset, DataLoader
 
 from mpl_toolkits import mplot3d
 
+
+class Data(Dataset):
+
+    # Constructor
+    def __init__(self):
+        self.x = torch.arange(-3, 3, 0.1).view(-1, 1)
+        self.y = 1 * self.x - 1
+        self.len = self.x.shape[0]
+
+    # Getter
+    def __getitem__(self, index):
+        return self.x[index], self.y[index]
+
+    # Return the length
+    def __len__(self):
+        return self.len
 
 class plot_error_surfaces(object):
 
@@ -92,46 +109,19 @@ def forward(x):
 def criterion(yhat, y):
     return torch.mean((yhat - y) ** 2)
 
-def train_model(iter):
+
+def train_model_DataLoader(epochs):
     # Loop
-    for epoch in range(iter):
-        # make a prediction
-        Yhat = forward(X)
-
-        # calculate the loss
-        loss = criterion(Yhat, Y)
-
-        # Section for plotting
-        get_surface.set_para_loss(w.data.tolist(), b.data.tolist(), loss.tolist())
-        get_surface.plot_ps()
-
-        # store the loss in the list LOSS_BGD
-        LOSS_BGD.append(loss)
-
-        # backward pass: compute gradient of the loss with respect to all the learnable parameters
-        loss.backward()
-
-        # update parameters slope and bias
-        w.data = w.data - lr * w.grad.data
-        b.data = b.data - lr * b.grad.data
-
-        # zero the gradients before running the backward pass
-        w.grad.data.zero_()
-        b.grad.data.zero_()
-
-
-def train_model_SGD(iter):
-    # Loop
-    for epoch in range(iter):
+    for epoch in range(epochs):
 
         # SGD is an approximation of out true total loss/cost, in this line of code we calculate our true loss/cost and store it
         Yhat = forward(X)
 
         # store the loss
-        LOSS_SGD.append(criterion(Yhat, Y).tolist())
+        LOSS_Loader.append(criterion(Yhat, Y).tolist())
 
-        for x, y in zip(X, Y):
-            # make a pridiction
+        for x, y in trainloader:
+            # make a prediction
             yhat = forward(x)
 
             # calculate the loss
@@ -140,19 +130,24 @@ def train_model_SGD(iter):
             # Section for plotting
             get_surface.set_para_loss(w.data.tolist(), b.data.tolist(), loss.tolist())
 
-            # backward pass: compute gradient of the loss with respect to all the learnable parameters
+            # Backward pass: compute gradient of the loss with respect to all the learnable parameters
             loss.backward()
 
-            # update parameters slope and bias
+            # Updata parameters slope
             w.data = w.data - lr * w.grad.data
             b.data = b.data - lr * b.grad.data
 
-            # zero the gradients before running the backward pass
+            # Clear gradients
             w.grad.data.zero_()
             b.grad.data.zero_()
 
         # plot surface and data space after each epoch
         get_surface.plot_ps()
+
+torch.manual_seed(1)
+
+dataset = Data()
+print("The length of dataset: ", len(dataset))
 
 torch.manual_seed(1)
 X = torch.arange(-3, 3, 0.1).view(-1, 1)
@@ -166,20 +161,17 @@ plt.ylabel('y')
 plt.legend()
 plt.show()
 
-w = torch.tensor(-15.0, requires_grad = True)
-b = torch.tensor(-10.0, requires_grad = True)
-
+w = torch.tensor(-15.0,requires_grad=True)
+b = torch.tensor(-10.0,requires_grad=True)
+LOSS_Loader = []
 lr = 0.1
-LOSS_BGD = []
-LOSS_SGD = []
 
 get_surface = plot_error_surfaces(15, 13, X, Y, 30, go = False)
+trainloader = DataLoader(dataset = dataset, batch_size = 1)
 
-train_model(10)
-train_model_SGD(10)
+train_model_DataLoader(10)
 
-plt.plot(LOSS_BGD,label = "Batch Gradient Descent")
-plt.plot(LOSS_SGD,label = "Stochastic Gradient Descent")
+plt.plot(LOSS_Loader,label="Stochastic Gradient Descent with DataLoader")
 plt.xlabel('epoch')
 plt.ylabel('Cost/ total loss')
 plt.legend()
