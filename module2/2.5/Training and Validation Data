@@ -1,0 +1,133 @@
+from torch import nn
+import torch
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use("macosx")
+from torch import nn,optim
+from torch.utils.data import Dataset, DataLoader
+
+
+class linear_regression(nn.Module):
+
+    # Constructor
+    def __init__(self, input_size, output_size):
+        super(linear_regression, self).__init__()
+        self.linear = nn.Linear(input_size, output_size)
+
+    # Prediction function
+    def forward(self, x):
+        yhat = self.linear(x)
+        return yhat
+
+class Data(Dataset): #customowa klasa, która jednak musi być projektowana w jakiejś ml konwencji
+#bo przekazujemy ją do oficjalnej struktury torcha, dataloader
+#nasza ma init z modelem x, y i niezanieczyszczona f
+
+    # Constructor
+    def __init__(self, train=True):
+        self.x = torch.arange(-3, 3, 0.1).view(-1, 1)
+        self.f = -3 * self.x + 1
+        self.y = self.f + 0.1 * torch.randn(self.x.size())
+        self.len = self.x.shape[0]
+
+        # outliers
+        if train == True:
+            self.y[0] -= 10
+            self.y[50:55] = 1*torch.randn(self.y[50:55].size())
+        else:
+            pass
+
+    # Getter
+    def __getitem__(self, index):
+        return self.x[index], self.y[index]
+
+    # Get Length
+    def __len__(self):
+        return self.len
+
+
+def train_model_with_lr(iter, lr_list):
+    # iterate through different learning rates
+    for i, lr in enumerate(lr_list):
+        model = linear_regression(1, 1)
+        optimizer = optim.SGD(model.parameters(), lr=lr) #funkcja z optima, która ma w sobie model regresji liniowej i robi z niego gradienty
+        for epoch in range(iter):
+            for x, y in trainloader:
+                yhat = model(x)
+                loss = criterion(yhat, y)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+        # train data
+        Yhat = model(train_data.x)
+        train_loss = criterion(Yhat, train_data.y)
+        train_error[i] = train_loss.item()
+
+        # validation data
+        Yhat = model(val_data.x)
+        val_loss = criterion(Yhat, val_data.y)
+        validation_error[i] = val_loss.item()
+        MODELS.append(model)
+
+
+
+train_data = Data()
+val_data = Data(train = False)
+
+plt.plot(train_data.x.numpy(), train_data.y.numpy(), 'xr')
+plt.plot(train_data.x.numpy(), train_data.f.numpy())
+plt.plot(train_data.x.numpy(), val_data.y.numpy(), 'xg')
+plt.show()
+
+criterion = nn.MSELoss() #mierzy mean square error, już nie piszemy sami, jest pytorch
+trainloader = DataLoader(dataset = train_data, batch_size = 1) #Combines a dataset and a sampler, and provides an iterable over the given dataset.
+#batch_size mówi ile załadować sampli na trening
+
+learning_rates=[0.0001, 0.001, 0.01, 0.1] #lista lr do porównania
+
+train_error=torch.zeros(len(learning_rates)) #lista na train error
+validation_error=torch.zeros(len(learning_rates)) #lista na validation error
+
+MODELS=[]
+
+train_model_with_lr(10, learning_rates) #10 to epoki treningowe dla modelu zbiegające jego parametry 10 razy
+
+plt.semilogx(np.array(learning_rates), train_error.numpy(), label = 'training loss/total Loss')
+plt.semilogx(np.array(learning_rates), validation_error.numpy(), label = 'validation cost/total Loss')
+plt.ylabel('Cost\ Total Loss')
+plt.xlabel('learning rate')
+plt.legend()
+plt.show()
+
+
+
+i = 0
+for model, learning_rate in zip(MODELS, learning_rates):
+    yhat = model(val_data.x)
+    plt.plot(val_data.x.numpy(), yhat.detach().numpy(), label = 'lr:' + str(learning_rate))
+    print('i', yhat.detach().numpy()[0:3])
+plt.plot(val_data.x.numpy(), val_data.f.numpy(), 'or', label = 'validation data')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
+
+"""model = linear_regression(1, 1) #ewentualne wybieranie wartości z trainloader, nwm jak skonwertowa listę do numpy'a w plocie
+for epoch in range(3):
+    valx = []
+    valy = []
+    valyhat =[]
+    for x,y in trainloader:
+        valx.append(x.item)
+        valy.append(y.item)
+        valyhat.append(model(x).item)
+
+    plt.plot(np.asarray(valx, dtype=np.float32), np.asarray(valy, dtype=np.float32), 'or', label='y')
+    plt.plot(np.asarray(valx, dtype=np.float32), np.asarray(valyhat, dtype=np.float32), 'or', label='yhat')
+    plt.ylabel(i)
+    plt.show()"""
+
+
+
