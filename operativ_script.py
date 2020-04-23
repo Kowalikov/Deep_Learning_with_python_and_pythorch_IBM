@@ -1,3 +1,12 @@
-h = .4
+from numpy import exp as exp
+import math
+import scipy
 
-print(h)
+
+def sigmoid(x):
+    return (1/(1+exp(-x)))
+
+
+z = sigmoid(-4)
+print(z)
+
